@@ -10,9 +10,9 @@ def query_ollama(prompt: str):
         "model": MODEL,
         "prompt": prompt,
         "stream": False,
-        "format": "json",  # 🔥 THIS IS THE GAME CHANGER
+        "format": "json",  
         "options": {
-            "temperature": 0.2,   # 🔥 reduce creativity
+            "temperature": 0.4,  
             "top_p": 0.9
         }
     }
