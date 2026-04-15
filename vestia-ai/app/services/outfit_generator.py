@@ -1,7 +1,34 @@
 import json
 import re
 from app.core.ollama_client import query_ollama
+from app.utils.color_matcher import score_palette
 
+def rank_items_by_color(wardrobe):
+    """
+    Sort items based on how well they match each other
+    """
+
+    scored = []
+
+    for item in wardrobe:
+        total_score = 0
+
+        for other in wardrobe:
+            if item == other:
+                continue
+
+            score = score_palette(
+                item.get("palette", []),
+                other.get("palette", [])
+            )
+
+            total_score += score
+
+        scored.append((item, total_score))
+
+    scored.sort(key=lambda x: x[1], reverse=True)
+
+    return [item for item, _ in scored]
 
 def build_prompt(wardrobe, user_profile, occasion, weather):
 
@@ -49,7 +76,6 @@ Output format:
 """
     return prompt
 
-
 def extract_first_json(text):
     try:
         match = re.search(r'\{.*\}', text, re.DOTALL)
@@ -58,7 +84,6 @@ def extract_first_json(text):
         return None
     except:
         return None
-
 
 def safe_parse_json(text):
 
@@ -77,12 +102,12 @@ def safe_parse_json(text):
             "exception": str(e)
         }
 
-
 def generate_outfit(wardrobe, user_profile, occasion, weather):
 
     if not wardrobe:
         return {"error": "Wardrobe is empty"}
 
+    wardrobe = rank_items_by_color(wardrobe)
     prompt = build_prompt(wardrobe, user_profile, occasion, weather)
 
     response = query_ollama(prompt)
